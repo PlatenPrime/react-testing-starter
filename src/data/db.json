@@ -391,6 +391,12 @@
       "price": 10,
       "categoryId": 1,
       "id": 63
+    },
+    {
+      "id": 64,
+      "name": "Table",
+      "price": 23,
+      "categoryId": 3
     }
   ]
 }
