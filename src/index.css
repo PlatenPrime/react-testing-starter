@@ -35,6 +35,15 @@ a:hover {
   border-radius: 5px;
 }
 
+.btn:hover {
+  background: #535bf2;
+}
+
+.btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
 .input {
   border: 1px solid #ccc;
   border-radius: 5px;
