@@ -10,6 +10,7 @@ const SearchBox = ({ onChange }: Props) => {
   return (
     <div>
       <input
+      value={searchTerm}
         type="text"
         placeholder="Search..."
         className="input"
