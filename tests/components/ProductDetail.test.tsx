@@ -44,7 +44,7 @@ const product = db.product.findFirst({ where: { id: { equals: productId } } });
       })
     );
 
-    render(<ProductDetail productId={productId} />);
+    render(<ProductDetail productId={0} />);
     expect(await screen.findByText(/not found/i)).toBeInTheDocument();
   });
 
