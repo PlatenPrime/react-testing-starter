@@ -5,28 +5,22 @@ import { http, HttpResponse } from "msw";
 import { server } from "../mocks/server";
 import { db } from "../mocks/db";
 
-
 describe("ProductDetail", () => {
-
   let productId: number;
 
   beforeAll(() => {
-     const product = db.product.create();
-     productId = product.id;
-    });
+    const product = db.product.create();
+    productId = product.id;
+  });
 
-
-    afterAll(() => {
-      db.product.delete({ where: { id: { equals: productId } } });
-    });
-
-
+  afterAll(() => {
+    db.product.delete({ where: { id: { equals: productId } } });
+  });
 
   it("should render product details", async () => {
-
-const product = db.product.findFirst({ where: { id: { equals: productId } } });
-
-
+    const product = db.product.findFirst({
+      where: { id: { equals: productId } },
+    });
 
     render(<ProductDetail productId={productId} />);
     expect(
@@ -39,12 +33,12 @@ const product = db.product.findFirst({ where: { id: { equals: productId } } });
 
   it("should render message if product is not found", async () => {
     server.use(
-      http.get("/products/1", () => {
+      http.get("/products/1234", () => {
         return HttpResponse.json(null);
       })
     );
 
-    render(<ProductDetail productId={0} />);
+    render(<ProductDetail productId={1234} />);
     expect(await screen.findByText(/not found/i)).toBeInTheDocument();
   });
 
@@ -52,5 +46,17 @@ const product = db.product.findFirst({ where: { id: { equals: productId } } });
     render(<ProductDetail productId={0} />);
 
     expect(await screen.findByText(/invalid/i)).toBeInTheDocument();
+  });
+
+  it("should render error message when there is an error", async () => {
+    server.use(
+      http.get("/products/123", () => {
+        return HttpResponse.error();
+      })
+    );
+
+    render(<ProductDetail productId={123} />);
+
+    expect(await screen.findByText(/error/i)).toBeInTheDocument();
   });
 });
