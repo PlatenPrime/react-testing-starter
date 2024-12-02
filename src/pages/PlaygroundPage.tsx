@@ -1,8 +1,8 @@
 
-import ProductListPage from "./ProductListPage";
+import BrowseProducts from "./BrowseProductsPage";
 
 const PlaygroundPage = () => {
-  return <ProductListPage />;
+  return <BrowseProducts />;
 };
 
 export default PlaygroundPage;

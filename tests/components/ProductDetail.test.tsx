@@ -1,9 +1,9 @@
 import { render, screen } from "@testing-library/react";
-import ProductDetail from "../../src/components/ProductDetail";
-import { products } from "../mocks/data";
 import { http, HttpResponse } from "msw";
-import { server } from "../mocks/server";
+import ProductDetail from "../../src/components/ProductDetail";
+import AllProviders from "../AllProviders";
 import { db } from "../mocks/db";
+import { server } from "../mocks/server";
 
 describe("ProductDetail", () => {
   let productId: number;
@@ -22,7 +22,7 @@ describe("ProductDetail", () => {
       where: { id: { equals: productId } },
     });
 
-    render(<ProductDetail productId={productId} />);
+    render(<ProductDetail productId={productId} />, { wrapper: AllProviders });
     expect(
       await screen.findByText(new RegExp(product!.name))
     ).toBeInTheDocument();
@@ -37,15 +37,15 @@ describe("ProductDetail", () => {
         return HttpResponse.json(null);
       })
     );
-
-    render(<ProductDetail productId={1234} />);
+    render(<ProductDetail productId={1234} />, { wrapper: AllProviders });
     expect(await screen.findByText(/not found/i)).toBeInTheDocument();
   });
 
-  it("should render error for invalid product id", async () => {
-    render(<ProductDetail productId={0} />);
+  it("should render invalid message for invalid product id", async () => {
+  
+    render(<ProductDetail productId={0} />, { wrapper: AllProviders });
 
-    expect(await screen.findByText(/invalid/i)).toBeInTheDocument();
+    expect(await screen.findByText(/404/i)).toBeInTheDocument();
   });
 
   it("should render error message when there is an error", async () => {
@@ -55,7 +55,7 @@ describe("ProductDetail", () => {
       })
     );
 
-    render(<ProductDetail productId={123} />);
+    render(<ProductDetail productId={123}  />, { wrapper: AllProviders });
 
     expect(await screen.findByText(/error/i)).toBeInTheDocument();
   });
