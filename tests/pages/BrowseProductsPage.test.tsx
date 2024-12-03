@@ -31,17 +31,13 @@ describe("BrowseProductsPage", () => {
     ).toBeInTheDocument();
   });
 
-  it(
-    "should hide a loading skeleton after categories are fetched",
-    async () => {
-      renderComponent();
+  it("should hide a loading skeleton after categories are fetched", async () => {
+    renderComponent();
 
-      await waitForElementToBeRemoved(() =>
-        screen.getByRole("progressbar", { name: /categories/i })
-      );
-    }
-  );
-
+    await waitForElementToBeRemoved(() =>
+      screen.getByRole("progressbar", { name: /categories/i })
+    );
+  });
 
   it("should show a loading skeleton when fetching products", () => {
     server.use(
@@ -58,19 +54,34 @@ describe("BrowseProductsPage", () => {
     ).toBeInTheDocument();
   });
 
-  it(
-    "should hide a loading skeleton after products are fetched",
-    async () => {
-      renderComponent();
+  it("should hide a loading skeleton after products are fetched", async () => {
+    renderComponent();
 
-      await waitForElementToBeRemoved(() =>
-        screen.getByRole("progressbar", { name: /products/i })
-      );
-    }
-  );
+    await waitForElementToBeRemoved(() =>
+      screen.getByRole("progressbar", { name: /products/i })
+    );
+  });
 
+  it("should not render an error if categories cannot be fetched", async () => {
+    server.use(http.get("/categories", () => HttpResponse.error()));
 
+    renderComponent();
 
+    await waitForElementToBeRemoved(() =>
+      screen.getByRole("progressbar", { name: /categories/i })
+    );
 
+    expect(screen.queryByText(/error/i)).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("combobox", { name: /category/i })
+    ).not.toBeInTheDocument();
+  });
 
+  it("should render an error if products cannot be fetched", async () => {
+    server.use(http.get("/products", () => HttpResponse.error()));
+
+    renderComponent();
+
+    expect( await screen.findByText(/error/i)).toBeInTheDocument();
+  });
 });
