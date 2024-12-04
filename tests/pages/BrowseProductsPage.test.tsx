@@ -7,8 +7,25 @@ import { server } from "../mocks/server";
 import { http, delay, HttpResponse } from "msw";
 import BrowseProducts from "../../src/pages/BrowseProductsPage";
 import { Theme } from "@radix-ui/themes";
+import userEvent from "@testing-library/user-event";
+import { db } from "../mocks/db";
+import { Category } from "../../src/entities";
 
 describe("BrowseProductsPage", () => {
+  const categories: Category[] = [];
+
+  beforeAll(() =>
+    [1, 2].forEach(() => {
+      const category = db.category.create();
+      categories.push(category);
+    })
+  );
+
+
+  afterAll(() => {
+    db.category.deleteMany({ where: { id: { in: categories.map((c) => c.id) } } });
+  });
+
   const renderComponent = () =>
     render(
       <Theme>
@@ -82,6 +99,20 @@ describe("BrowseProductsPage", () => {
 
     renderComponent();
 
-    expect( await screen.findByText(/error/i)).toBeInTheDocument();
+    expect(await screen.findByText(/error/i)).toBeInTheDocument();
+  });
+
+  it("should render categories", async () => {
+    renderComponent();
+
+    const combobox = await screen.findByRole("combobox");
+    expect(combobox).toBeInTheDocument();
+
+    const user = userEvent.setup();
+
+    await user.click(combobox);
+
+    const options = await screen.findAllByRole("option");
+    expect(options.length).toBeGreaterThan(0);
   });
 });
