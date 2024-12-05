@@ -9,28 +9,42 @@ import BrowseProducts from "../../src/pages/BrowseProductsPage";
 import { Theme } from "@radix-ui/themes";
 import userEvent from "@testing-library/user-event";
 import { db } from "../mocks/db";
-import { Category } from "../../src/entities";
+import { Category, Product } from "../../src/entities";
+import { CartProvider } from "../../src/providers/CartProvider";
 
 describe("BrowseProductsPage", () => {
   const categories: Category[] = [];
+  const products: Product[] = [];
 
   beforeAll(() =>
-    [1, 2].forEach(() => {
-      const category = db.category.create();
+    [1, 2].forEach((item) => {
+      const category = db.category.create({name: `Category ${item}`});
       categories.push(category);
+
+      const product = db.product.create();
+      products.push(product);
     })
   );
 
-
   afterAll(() => {
-    db.category.deleteMany({ where: { id: { in: categories.map((c) => c.id) } } });
+    const categoryIds = categories.map((c) => c.id);
+    db.category.deleteMany({
+      where: { id: { in: categoryIds } },
+    });
+
+    const productIds = products.map((p) => p.id);
+    db.category.deleteMany({
+      where: { id: { in: productIds } },
+    });
   });
 
   const renderComponent = () =>
     render(
-      <Theme>
-        <BrowseProducts />
-      </Theme>
+      <CartProvider>
+        <Theme>
+          <BrowseProducts />
+        </Theme>
+      </CartProvider>
     );
 
   it("should show a loading skeleton when fetching categories", () => {
@@ -112,7 +126,26 @@ describe("BrowseProductsPage", () => {
 
     await user.click(combobox);
 
-    const options = await screen.findAllByRole("option");
-    expect(options.length).toBeGreaterThan(0);
+    // const options = await screen.findAllByRole("option");
+    // expect(options.length).toBeGreaterThan(0);
+    // -------->
+    expect(screen.getByRole("option", { name: /all/i })).toBeInTheDocument();
+    categories.forEach((category) => {
+      const option = screen.getByRole("option", { name: category.name });
+      expect(option).toBeInTheDocument();
+    });
+  });
+
+  it("should render products", async () => {
+    renderComponent();
+
+    await waitForElementToBeRemoved(() =>
+      screen.getByRole("progressbar", { name: /products/i })
+    );
+
+    products.forEach((product) => {
+      const productItem = screen.getByText(product.name);
+      expect(productItem).toBeInTheDocument();
+    });
   });
 });
