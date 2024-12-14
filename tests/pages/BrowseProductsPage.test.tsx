@@ -10,6 +10,8 @@ import BrowseProducts from "../../src/pages/BrowseProductsPage";
 import { CartProvider } from "../../src/providers/CartProvider";
 import { db, getProductsByCategory } from "../mocks/db";
 import { simulateDalay, simulateError } from "../utils";
+import ReactQueryProvider from "../../src/providers/ReactQueryProvider";
+import AllProviders from "../AllProviders";
 
 describe("BrowseProductsPage", () => {
   const categories: Category[] = [];
@@ -145,11 +147,13 @@ describe("BrowseProductsPage", () => {
 
 function renderComponent() {
   render(
-    <CartProvider>
-      <Theme>
-        <BrowseProducts />
-      </Theme>
-    </CartProvider>
+    <ReactQueryProvider>
+      <CartProvider>
+        <Theme>
+          <BrowseProducts />
+        </Theme>
+      </CartProvider>
+    </ReactQueryProvider>, {wrapper: AllProviders}
   );
 
   const getCategoriesSkeleton = () =>

@@ -5,14 +5,20 @@ import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import QuantitySelector from "../components/QuantitySelector";
 import { Category, Product } from "../entities";
+import { useQuery } from "react-query";
 
 function BrowseProducts() {
+  const categoriesQuery = useQuery({
+    queryKey: ["categories"],
+    queryFn: () => axios.get<Category[]>("/categories").then((res) => res.data),
+  });
+
   const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
+
   const [isProductsLoading, setProductsLoading] = useState(false);
-  const [isCategoriesLoading, setCategoriesLoading] = useState(false);
+
   const [errorProducts, setErrorProducts] = useState("");
-  const [errorCategories, setErrorCategories] = useState("");
+
   const [selectedCategoryId, setSelectedCategoryId] = useState<
     number | undefined
   >();
@@ -31,32 +37,20 @@ function BrowseProducts() {
       }
     };
 
-    const fetchCategories = async () => {
-      try {
-        setCategoriesLoading(true);
-        const { data } = await axios.get<Category[]>("/categories");
-        setCategories(data);
-      } catch (error) {
-        if (error instanceof AxiosError) setErrorCategories(error.message);
-        else setErrorCategories("An unexpected error occurred");
-      } finally {
-        setCategoriesLoading(false);
-      }
-    };
-    fetchCategories();
+  
     fetchProducts();
   }, []);
 
   if (errorProducts) return <div>Error: {errorProducts}</div>;
 
   const renderCategories = () => {
-    if (isCategoriesLoading)
+    if (categoriesQuery.isLoading)
       return (
         <div role="progressbar" aria-label="Loading categories">
           <Skeleton />
         </div>
       );
-    if (errorCategories) return null
+    if (categoriesQuery.isError) return null;
     return (
       <Select.Root
         onValueChange={(categoryId) =>
@@ -68,7 +62,7 @@ function BrowseProducts() {
           <Select.Group>
             <Select.Label>Category</Select.Label>
             <Select.Item value="all">All</Select.Item>
-            {categories?.map((category) => (
+            {categoriesQuery.data?.map((category) => (
               <Select.Item key={category.id} value={category.id.toString()}>
                 {category.name}
               </Select.Item>
