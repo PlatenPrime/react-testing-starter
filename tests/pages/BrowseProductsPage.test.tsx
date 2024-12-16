@@ -1,4 +1,3 @@
-import { Theme } from "@radix-ui/themes";
 import {
   render,
   screen,
@@ -7,11 +6,9 @@ import {
 import userEvent from "@testing-library/user-event";
 import { Category, Product } from "../../src/entities";
 import BrowseProducts from "../../src/pages/BrowseProductsPage";
-import { CartProvider } from "../../src/providers/CartProvider";
+import AllProviders from "../AllProviders";
 import { db, getProductsByCategory } from "../mocks/db";
 import { simulateDalay, simulateError } from "../utils";
-import ReactQueryProvider from "../../src/providers/ReactQueryProvider";
-import AllProviders from "../AllProviders";
 
 describe("BrowseProductsPage", () => {
   const categories: Category[] = [];
@@ -146,15 +143,7 @@ describe("BrowseProductsPage", () => {
 });
 
 function renderComponent() {
-  render(
-    <ReactQueryProvider>
-      <CartProvider>
-        <Theme>
-          <BrowseProducts />
-        </Theme>
-      </CartProvider>
-    </ReactQueryProvider>, {wrapper: AllProviders}
-  );
+  render(<BrowseProducts />, { wrapper: AllProviders });
 
   const getCategoriesSkeleton = () =>
     screen.getByRole("progressbar", { name: /categories/i });
