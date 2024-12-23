@@ -15,15 +15,34 @@ describe("ProductForm", () => {
     db.category.delete({ where: { id: { equals: category.id } } });
   });
 
+  const renderProductForm = (product?: Product) => {
+    render(<ProductForm product={product} onSubmit={vi.fn()} />, {
+      wrapper: AllProviders,
+    });
+
+    return {
+      waitForFormToLoad: () => screen.findByRole("form"),
+      getInputs: () => {
+        return {
+          nameInput: screen.getByPlaceholderText(/name/i),
+          priceInput: screen.getByPlaceholderText(/price/i),
+          categoryInput: screen.getByRole("combobox", { name: /category/i }),
+        };
+      },
+    };
+  };
+
   it("should render form fields", async () => {
-    render(<ProductForm onSubmit={vi.fn()} />, { wrapper: AllProviders });
+    const { waitForFormToLoad, getInputs } = renderProductForm();
 
     // await waitForElementToBeRemoved(() => screen.queryByText(/loading/i)); --- альтернатива
-    await screen.findByRole("form");
+    await waitForFormToLoad();
+
+    const inputs = getInputs();
 
     // expect( await screen.findByRole("textbox", { name: /name/i })).toBeInTheDocument(); --- альтернатива
-    expect(screen.getByPlaceholderText(/name/i)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/price/i)).toBeInTheDocument();
+    expect(inputs.nameInput).toBeInTheDocument();
+    expect(inputs.priceInput).toBeInTheDocument();
   });
 
   it("should populate form fields when editing a product", async () => {
@@ -34,21 +53,16 @@ describe("ProductForm", () => {
       categoryId: category.id,
     };
 
-    render(<ProductForm product={product} onSubmit={vi.fn()} />, {
-      wrapper: AllProviders,
-    });
+    const { waitForFormToLoad, getInputs } = renderProductForm(product);
 
     // await waitForElementToBeRemoved(() => screen.queryByText(/loading/i)); --- альтернатива
-    await screen.findByRole("form");
+    await waitForFormToLoad();
+
+    const inputs = getInputs();
 
     // expect( await screen.findByRole("textbox", { name: /name/i })).toBeInTheDocument(); --- альтернатива
-    expect(screen.getByPlaceholderText(/name/i)).toHaveValue(product.name);
-    expect(screen.getByPlaceholderText(/price/i)).toHaveValue(
-      product.price.toString()
-    );
-
-    expect(
-      screen.getByRole("combobox", { name: /category/i })
-    ).toHaveTextContent(category.name);
+    expect(inputs.nameInput).toHaveValue(product.name);
+    expect(inputs.priceInput).toHaveValue(product.price.toString());
+    expect(inputs.categoryInput).toHaveTextContent(category.name);
   });
 });
