@@ -21,8 +21,8 @@ describe("ProductForm", () => {
     });
 
     return {
-      waitForFormToLoad: () => screen.findByRole("form"),
-      getInputs: () => {
+      waitForFormToLoad: async () => {
+        await screen.findByRole("form");
         return {
           nameInput: screen.getByPlaceholderText(/name/i),
           priceInput: screen.getByPlaceholderText(/price/i),
@@ -33,12 +33,10 @@ describe("ProductForm", () => {
   };
 
   it("should render form fields", async () => {
-    const { waitForFormToLoad, getInputs } = renderProductForm();
+    const { waitForFormToLoad } = renderProductForm();
 
     // await waitForElementToBeRemoved(() => screen.queryByText(/loading/i)); --- альтернатива
-    await waitForFormToLoad();
-
-    const inputs = getInputs();
+    const inputs = await waitForFormToLoad();
 
     // expect( await screen.findByRole("textbox", { name: /name/i })).toBeInTheDocument(); --- альтернатива
     expect(inputs.nameInput).toBeInTheDocument();
@@ -53,16 +51,22 @@ describe("ProductForm", () => {
       categoryId: category.id,
     };
 
-    const { waitForFormToLoad, getInputs } = renderProductForm(product);
+    const { waitForFormToLoad } = renderProductForm(product);
 
     // await waitForElementToBeRemoved(() => screen.queryByText(/loading/i)); --- альтернатива
-    await waitForFormToLoad();
-
-    const inputs = getInputs();
+    const inputs = await waitForFormToLoad();
 
     // expect( await screen.findByRole("textbox", { name: /name/i })).toBeInTheDocument(); --- альтернатива
     expect(inputs.nameInput).toHaveValue(product.name);
     expect(inputs.priceInput).toHaveValue(product.price.toString());
     expect(inputs.categoryInput).toHaveTextContent(category.name);
+  });
+
+  it("should put focus on the name field", async () => {
+    const { waitForFormToLoad } = renderProductForm();
+
+    const { nameInput } = await waitForFormToLoad();
+
+    expect(nameInput).toHaveFocus();
   });
 });
