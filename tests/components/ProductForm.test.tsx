@@ -22,13 +22,55 @@ describe("ProductForm", () => {
     });
 
     return {
+      expectErrorToBeInTheDocument: (errorMessage: RegExp) => {
+        const error = screen.getByRole("alert");
+        expect(error).toBeInTheDocument();
+        expect(error).toHaveTextContent(errorMessage);
+      },
+
       waitForFormToLoad: async () => {
         await screen.findByRole("form");
+
+        const nameInput = screen.getByPlaceholderText(/name/i);
+        const priceInput = screen.getByPlaceholderText(/price/i);
+        const categoryInput = screen.getByRole("combobox", {
+          name: /category/i,
+        });
+        const submitButton = screen.getByRole("button");
+
+        type FormData = {
+          [K in keyof Product]: any;
+        };
+
+        const validData: FormData = {
+          id: 1,
+          categoryId: 1,
+          name: "Bread",
+          price: 10,
+        };
+
+        const fill = async (product: FormData) => {
+          const user = userEvent.setup();
+
+          if (product.name !== undefined)
+            await user.type(nameInput, product.name);
+
+          if (product.price !== undefined)
+            await user.type(priceInput, product.price.toString());
+
+          await user.click(categoryInput);
+          const options = screen.getAllByRole("option");
+          await user.click(options[0]);
+          await user.click(submitButton);
+        };
+
         return {
-          nameInput: screen.getByPlaceholderText(/name/i),
-          priceInput: screen.getByPlaceholderText(/price/i),
-          categoryInput: screen.getByRole("combobox", { name: /category/i }),
-          submitButton: screen.getByRole("button"),
+          nameInput,
+          priceInput,
+          categoryInput,
+          submitButton,
+          fill,
+          validData,
         };
       },
     };
@@ -85,20 +127,51 @@ describe("ProductForm", () => {
   ])(
     " should display an error if name is $sccenario",
     async ({ name, errorMessage }) => {
-      const { waitForFormToLoad } = renderProductForm();
+      const { waitForFormToLoad, expectErrorToBeInTheDocument } =
+        renderProductForm();
 
       const form = await waitForFormToLoad();
-      const user = userEvent.setup();
-      if (name !== undefined) await user.type(form.nameInput, name);
-      await user.type(form.priceInput, "10");
-      await user.click(form.categoryInput);
-      const options = screen.getAllByRole("option");
-      await user.click(options[0]);
-      await user.click(form.submitButton);
 
-      const error = screen.getByRole("alert");
-      expect(error).toBeInTheDocument();
-      expect(error).toHaveTextContent(errorMessage);
+      await form.fill({ ...form.validData, name });
+
+      expectErrorToBeInTheDocument(errorMessage);
+    }
+  );
+
+  it.each([
+    {
+      scenario: "missing",
+      errorMessage: /required/i,
+    },
+    {
+      scenario: "0",
+      price: 0,
+      errorMessage: /1/,
+    },
+    {
+      scenario: "negative",
+      price: -1,
+      errorMessage: /1/,
+    },
+    {
+      scenario: "greater than 1000",
+      price: 1001,
+      errorMessage: /1000/,
+    },
+    {
+      scenario: "non-numeric",
+      price: "a",
+      errorMessage: /required/,
+    },
+  ])(
+    " should display an error if price is $sccenario",
+    async ({ price, errorMessage }) => {
+      const { waitForFormToLoad, expectErrorToBeInTheDocument } =
+        renderProductForm();
+
+      const form = await waitForFormToLoad();
+      await form.fill({ ...form.validData, price });
+      expectErrorToBeInTheDocument(errorMessage);
     }
   );
 });
