@@ -137,7 +137,7 @@ describe("ProductForm", () => {
       errorMessage: /255/i,
     },
   ])(
-    " should display an error if name is $sccenario",
+    " should display an error if name is $scenario",
     async ({ name, errorMessage }) => {
       const { waitForFormToLoad, expectErrorToBeInTheDocument } =
         renderProductForm();
@@ -175,7 +175,7 @@ describe("ProductForm", () => {
       errorMessage: /required/,
     },
   ])(
-    " should display an error if price is $sccenario",
+    " should display an error if price is $scenario",
     async ({ price, errorMessage }) => {
       const { waitForFormToLoad, expectErrorToBeInTheDocument } =
         renderProductForm();
