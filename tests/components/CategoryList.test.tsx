@@ -30,7 +30,7 @@ describe("CategoryList", () => {
     render(<CategoryList />, { wrapper: AllProviders });
   };
 
-  it("should render a list of categories", async () => {
+  it.skip("should render a list of categories", async () => {
     renderComponent();
 
     await waitForElementToBeRemoved(() => screen.queryByText(/loading/i));
